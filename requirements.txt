@@ -3,3 +3,5 @@ djangorestframework>=3.14
 requests>=2.31
 python-decouple>=3.8
 google-generativeai>=0.8.0
+dj-database-url>=2.0
+psycopg2-binary>=2.9
