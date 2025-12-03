@@ -1,0 +1,169 @@
+<!-- templates/chat/chat_ui.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Curhatin — Teman Dengar Anonim</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="chat-container">
+    <div class="header">
+        <div>
+            <h5>💬 Curhatin — Teman Dengar Anonim</h5>
+            <small>Kamu aman di sini. Percakapan tidak disimpan secara pribadi.</small>
+        </div>
+        <div class="actions">
+            <button id="clear-chat" class="btn-action">🗑️ Bersihkan</button>
+            <button id="theme-toggle" class="btn-action">🌙</button>
+        </div>
+    </div>
+
+    <div class="chat-body" id="chat-box">
+        <!-- Pesan akan muncul di sini -->
+    </div>
+
+    <div class="input-panel">
+        <input type="text" id="user-input" class="input-field" placeholder="Ketik perasaanmu di sini..." maxlength="500">
+        <button id="send-btn" class="send-btn">Kirim</button>
+    </div>
+    <div class="footer-note">
+        💡 Respons AI + dukungan empatik. Untuk krisis, hubungi 119 atau 0800-100-1001.
+    </div>
+</div>
+
+<script>
+    let sessionId = localStorage.getItem('session_id');
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const clearBtn = document.getElementById('clear-chat');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // Terapkan tema
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        themeToggle.textContent = '☀️';
+    }
+
+    const reactions = ['👍', '❤️', '😢', '😮', '🙏'];
+
+    function addMessage(sender, text, messageId = null) {
+        const container = document.createElement('div');
+        container.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+        container.dataset.messageId = messageId || Date.now();
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = text;
+
+        let reactionBar = null;
+        if (sender === 'ai') {
+            reactionBar = document.createElement('div');
+            reactionBar.className = 'reaction-bar';
+            reactions.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'reaction-btn';
+                btn.textContent = emoji;
+                btn.onclick = () => console.log(`Reaksi: ${emoji} pada:`, text);
+                reactionBar.appendChild(btn);
+            });
+            bubble.addEventListener('click', () => reactionBar.classList.toggle('active'));
+        }
+
+        container.appendChild(bubble);
+        if (reactionBar) container.appendChild(reactionBar);
+        chatBox.appendChild(container);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function loadHistory() {
+        if (!sessionId) return;
+        const res = await fetch(`/api/chat/?session_id=${sessionId}`);
+        if (res.ok) {
+            const data = await res.json();
+            chatBox.innerHTML = '';
+            data.messages.forEach((msg, idx) => addMessage(msg.sender, msg.message, `msg-${idx}`));
+        }
+    }
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+        userInput.value = '';
+
+        addMessage('user', message);
+
+        // Skeleton loader
+        const loader = document.createElement('div');
+        loader.className = 'message ai-message';
+        loader.innerHTML = '<div class="bubble skeleton" style="width: 60%;"></div>';
+        chatBox.appendChild(loader);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const payload = { message };
+        if (sessionId) payload.session_id = sessionId;
+
+        try {
+            const res = await fetch('/api/chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            loader.remove();
+            if (res.ok) {
+                const data = await res.json();
+                sessionId = data.session_id;
+                localStorage.setItem('session_id', sessionId);
+                addMessage('ai', data.messages[data.messages.length - 1].message);
+            } else {
+                addMessage('ai', 'Maaf, terjadi kesalahan. Silakan coba lagi.');
+            }
+        } catch (e) {
+            loader.remove();
+            addMessage('ai', 'Koneksi terputus. Coba lagi nanti.');
+        }
+    }
+
+    function clearChat() {
+        chatBox.innerHTML = '';
+        sessionId = null;
+        localStorage.removeItem('session_id');
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        themeToggle.textContent = isLight ? '🌙' : '☀️';
+
+        // Jika light mode, ganti warna
+        if (isLight) {
+            document.documentElement.style.setProperty('--bg', '#FAFAFA');
+            document.documentElement.style.setProperty('--chat-bg', '#FFFFFF');
+            document.documentElement.style.setProperty('--text-dark', '#1F2937');
+            document.documentElement.style.setProperty('--text-light', '#6B7280');
+            document.documentElement.style.setProperty('--border', '#E5E7EB');
+            document.documentElement.style.setProperty('--ai-bubble', '#F3F4F6');
+        } else {
+            document.documentElement.style.setProperty('--bg', '#0F172A');
+            document.documentElement.style.setProperty('--chat-bg', '#1E293B');
+            document.documentElement.style.setProperty('--text-dark', '#E2E8F0');
+            document.documentElement.style.setProperty('--text-light', '#94A3B8');
+            document.documentElement.style.setProperty('--border', '#334155');
+            document.documentElement.style.setProperty('--ai-bubble', '#334155');
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    clearBtn.addEventListener('click', clearChat);
+    themeToggle.addEventListener('click', toggleTheme);
+
+    loadHistory();
+</script>
+</body>
+</html>
