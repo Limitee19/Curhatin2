@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-mental-health-chatbot')
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = ['https://nanbei.pythonanywhere.com/']  # Ganti di produksi
+ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='127.0.0.1').split(',')]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
