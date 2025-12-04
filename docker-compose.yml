@@ -9,7 +9,7 @@ services:
     environment:
       - DEBUG=0
       - AI_PROVIDER=gemini
-      - GEMINI_API_KEY=AIzaSyCql8dybgx-YpAXy2JcOE85NeIwkTJ_kZE
+      - GEMINI_API_KEY=GEMINI_API_KEY
       - SECRET_KEY=&8i3v^=))u1o2vao+brm3uk8#&x(f=qm!!e6y95(-_71q+sg!_
       - DATABASE_URL=postgresql://postgres:YQdIzMbIRCLrVVVqmjeGArkmLotdXDQm@postgres.railway.internal:5432/railway
       - ALLOWED_HOSTS=curhatin2-production.up.railway.app
