@@ -16,6 +16,7 @@ services:
     volumes:
       - ./logs:/app/logs
      command: >
-      sh -c "python manage.py migrate --noinput &&
-             python manage.py collectstatic --noinput &&
-             gunicorn mental_health_chatbot.wsgi:application --bind 0.0.0.0:8080 --workers 3 --log-level info"
+  sh -c "python manage.py migrate --noinput &&
+         python manage.py collectstatic --noinput &&
+         gunicorn mental_health_chatbot.wsgi:application --bind 0.0.0.0:${PORT} --workers 3 --log-level info"
+
