@@ -26,6 +26,7 @@ RUN python manage.py collectstatic --noinput
 # Expose port
 EXPOSE 8080
 
-CMD ["sh", "-c", "gunicorn mental_health_chatbot.wsgi:application --bind 0.0.0.0:${PORT:-8080}"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn mental_health_chatbot.wsgi:application --bind 0.0.0.0:${PORT:-8080}"]
+
 
 
