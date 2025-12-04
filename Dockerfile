@@ -1,32 +1,26 @@
 FROM python:3.11-slim
 
-# Set workdir
 WORKDIR /app
 
-# Install OS dependencies (postgres, etc)
+# Install OS dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . .
 
-# Folder untuk logs
+# Folder logs
 RUN mkdir -p logs
-
-# Collect static (kalau ada)
-RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8080
 
+# Start container: migrate DB, collectstatic, run Gunicorn
 CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn mental_health_chatbot.wsgi:application --bind 0.0.0.0:${PORT:-8080}"]
-
-
-
