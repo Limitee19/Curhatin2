@@ -28,5 +28,6 @@ EXPOSE 8000
 
 # Gunicorn (bukan runserver)
 RUN pip install gunicorn
-CMD ["gunicorn", "mental_health_chatbot.wsgi:application", "--bind", "0.0.0.0:$PORT"]
+CMD ["sh", "-c", "gunicorn mental_health_chatbot.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+
 
