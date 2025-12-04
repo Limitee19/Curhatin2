@@ -9,7 +9,7 @@ services:
     environment:
       - DEBUG=1
       - AI_PROVIDER=gemini
-      - GEMINI_API_KEY=AIzaSyB4c3bYfUzz9572-PDrAQmTvd5aA2TWaiY
+      - GEMINI_API_KEY=AIzaSyCql8dybgx-YpAXy2JcOE85NeIwkTJ_kZE
     volumes:
       - ./logs:/app/logs
     command: python manage.py runserver 0.0.0.0:8000
