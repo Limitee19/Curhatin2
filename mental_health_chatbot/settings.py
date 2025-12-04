@@ -7,10 +7,16 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ----------------------------
+# SECURITY
+# ----------------------------
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-mental-health-chatbot')
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='127.0.0.1').split(',')]
 
+# ----------------------------
+# INSTALLED APPS
+# ----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,9 +29,12 @@ INSTALLED_APPS = [
     'admin_dashboard',
 ]
 
+# ----------------------------
+# MIDDLEWARE
+# ----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # serve static files di production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -34,6 +43,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ----------------------------
+# URLS & TEMPLATES
+# ----------------------------
 ROOT_URLCONF = 'mental_health_chatbot.urls'
 
 TEMPLATES = [
@@ -54,23 +66,45 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mental_health_chatbot.wsgi.application'
 
-if config("DATABASE_URL", default=None):
-    # PostgreSQL (Railway)
+# ----------------------------
+# DATABASE
+# ----------------------------
+DATABASE_URL = config("DATABASE_URL", default=None)
+if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(
-            config("DATABASE_URL"),
+            DATABASE_URL,
             conn_max_age=600,
             ssl_require=True
         )
     }
+else:
+    # fallback ke SQLite lokal (opsional)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
+# ----------------------------
+# STATIC FILES
+# ----------------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# WhiteNoise storage
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# ----------------------------
+# DEFAULT AUTO FIELD
+# ----------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging untuk safety
+# ----------------------------
+# LOGGING
+# ----------------------------
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
