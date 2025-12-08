@@ -21,7 +21,7 @@ def _call_gemini(prompt: str) -> str:
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(
-            "gemini-2.0-flash-001",
+            "gemini-1.5-flash",
             system_instruction=(
                 "You are a compassionate, non-judgmental mental health support companion. "
                 "Respond with empathy, validation, and gentle guidance. "
